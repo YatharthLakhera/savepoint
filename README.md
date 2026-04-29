@@ -1,4 +1,9 @@
-# savepoint
+<h1 align="center">savepoint</h1>
+
+<p align="center">
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
+  <a href="#install"><img src="https://img.shields.io/badge/Claude%20Code-Plugin-D97757.svg" alt="Claude Code Plugin"></a>
+</p>
 
 Savepoints for [Claude Code](https://docs.claude.com/en/docs/claude-code) sessions.
 
@@ -12,15 +17,15 @@ Long Claude Code sessions accumulate a lot of context that doesn't live in the c
 
 If you have multiple Claude windows working on different topics in the same repo (auth in one, payments in another), give each its own savepoint with a name argument — they won't overwrite each other.
 
-## The commands
+## Commands at a glance
 
 | Command | What it does |
 | --- | --- |
-| `/save [name]` | Drops a savepoint of the current session. Self-assesses what context is in-the-head but not in the files, then writes a structured savepoint. Defaults to `last-memory.md`. Pass a name (e.g. `auth-redesign`) to use a separate file. If you don't pass a name and the existing default file is about a different topic, you'll be offered three suggested names for a new file. |
-| `/respawn [name]` | Reads the savepoint, internalizes it, cross-checks it against the actual files for staleness, and confirms current state + next steps. If the file isn't found, lists the other savepoints available in this repo. |
-| `/rewind` | Rewinds through the session, identifies distinct work threads, and proposes one savepoint per thread. Use when you forgot to `/save` along the way and a single session has accumulated multiple unrelated topics. Reads existing savepoints first to avoid duplicates — overlapping topics merge into the existing file rather than creating a clone. |
+| `/save [name]` | Drop a savepoint of the current session. |
+| `/respawn [name]` | Load a savepoint into a fresh session. |
+| `/rewind` | Split a multi-topic session into multiple savepoints. |
 
-All files live at `<cwd>/.claude/context-memory/<name>.md`. The directory is auto-created on first save. The `.md` extension is auto-appended if you leave it off.
+Full behavior, edge cases, and usage examples are in [Commands in detail](#commands-in-detail) and [Usage](#usage) below.
 
 ## Requirements
 
@@ -52,22 +57,6 @@ Type `/` in your Claude Code prompt. You should see `save` and `respawn` in the 
 
 …and you'll see `savepoint@savepoint` listed as enabled. If the new commands still don't show up, fully close and reopen your Claude Code session as a fallback — some older versions only refresh the command menu on session start.
 
-**To uninstall:**
-
-```
-/plugin uninstall savepoint@savepoint
-/reload-plugins
-```
-
-`/reload-plugins` is required to clear the commands from the slash menu. To also forget the marketplace entirely (optional), run `/plugin marketplace remove savepoint` afterwards.
-
-**To pull updates after a new release:**
-
-```
-/plugin marketplace update savepoint
-/reload-plugins
-```
-
 ### Option 2 — Manual copy
 
 If you'd rather drop the commands directly into your config without going through the plugin system:
@@ -89,6 +78,29 @@ cp /path/to/savepoint/commands/*.md .claude/commands/
 ```
 
 Add `.claude/context-memory/` to your `.gitignore` if you don't want to commit session memory, or *do* commit it if you want the team to share context.
+
+## Updating
+
+For the plugin install (Option 1), pull the latest version with:
+
+```
+/plugin marketplace update savepoint
+/reload-plugins
+```
+
+For manual copies (Options 2 and 3), `git pull` the repo and re-run the `cp` command from the install step.
+
+---
+
+## Commands in detail
+
+| Command | What it does |
+| --- | --- |
+| `/save [name]` | Drops a savepoint of the current session. Self-assesses what context is in-the-head but not in the files, then writes a structured savepoint. Defaults to `last-memory.md`. Pass a name (e.g. `auth-redesign`) to use a separate file. If you don't pass a name and the existing default file is about a different topic, you'll be offered three suggested names for a new file. |
+| `/respawn [name]` | Reads the savepoint, internalizes it, cross-checks it against the actual files for staleness, and confirms current state + next steps. If the file isn't found, lists the other savepoints available in this repo. |
+| `/rewind` | Rewinds through the session, identifies distinct work threads, and proposes one savepoint per thread. Use when you forgot to `/save` along the way and a single session has accumulated multiple unrelated topics. Reads existing savepoints first to avoid duplicates — overlapping topics merge into the existing file rather than creating a clone. |
+
+All files live at `<cwd>/.claude/context-memory/<name>.md`. The directory is auto-created on first save. The `.md` extension is auto-appended if you leave it off.
 
 ## Usage
 
@@ -279,6 +291,19 @@ Claude Code already has built-in memory mechanisms. `savepoint` is complementary
 - **Human-readable** — you can open it yourself and see exactly what the next session will see
 - **Portable** — works the same across machines, accounts, and clients
 - **Inspectable** — no surprise about what was remembered or forgotten
+
+## Uninstall
+
+For the plugin install (Option 1):
+
+```
+/plugin uninstall savepoint@savepoint
+/reload-plugins
+```
+
+`/reload-plugins` is required to clear the commands from the slash menu. To also forget the marketplace entirely (optional), run `/plugin marketplace remove savepoint` afterwards.
+
+For manual copies (Options 2 and 3), delete the `.md` files you copied from `~/.claude/commands/` or `.claude/commands/`.
 
 ## Contributing
 
