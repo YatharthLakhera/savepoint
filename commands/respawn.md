@@ -38,11 +38,11 @@ If files exist there, read each one's YAML meta block (`subject`, `last-updated`
 > - `<file-1>.md` — *<subject>* (last updated <date>)
 > - `<file-2>.md` — *<subject>* (last updated <date>)
 >
-> Run `/respawn <name>` with one of those, or `/savepoint` first to drop a savepoint of the current session."
+> Run `/respawn <name>` with one of those, or `/save` first to drop a savepoint of the current session."
 
 If `.claude/context-memory/` does not exist or is empty, simpler message:
 
-> "No savepoints found in this repo. Run `/savepoint` first to drop one, or `/respawn <name>` if you stored it under a different name."
+> "No savepoints found in this repo. Run `/save` first to drop one, or `/respawn <name>` if you stored it under a different name."
 
 Then stop.
 
