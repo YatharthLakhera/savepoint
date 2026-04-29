@@ -1,7 +1,7 @@
 {
   "name": "savepoint",
-  "description": "Savepoints for Claude Code sessions. Two slash commands — /save and /respawn — that persist session context to markdown files under .claude/context-memory/ so a future session can pick up exactly where the last one left off.",
-  "version": "0.3.0",
+  "description": "Savepoints for Claude Code sessions. Three slash commands — /save, /respawn, and /rewind — that persist session context to markdown files under .claude/context-memory/ so a future session can pick up exactly where the last one left off. /rewind retroactively splits a mixed-context session into multiple savepoints.",
+  "version": "0.4.0",
   "author": {
     "name": "Yatharth Lakhera"
   },

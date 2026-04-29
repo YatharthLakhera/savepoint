@@ -2,7 +2,7 @@
 
 Savepoints for [Claude Code](https://docs.claude.com/en/docs/claude-code) sessions.
 
-Two slash commands — `/save` and `/respawn` — that let you end one session, walk away, and resume in a fresh session as if you never closed the window. Like a savepoint in a game: drop one before you quit, respawn exactly where you left off.
+Three slash commands — `/save`, `/respawn`, and `/rewind` — that let you end one session, walk away, and resume in a fresh session as if you never closed the window. Like savepoints in a game: drop one before you quit, respawn exactly where you left off, or rewind through a messy session and split it into multiple savepoints if you forgot to drop one along the way.
 
 ## The problem
 
@@ -18,6 +18,7 @@ If you have multiple Claude windows working on different topics in the same repo
 | --- | --- |
 | `/save [name]` | Drops a savepoint of the current session. Self-assesses what context is in-the-head but not in the files, then writes a structured savepoint. Defaults to `last-memory.md`. Pass a name (e.g. `auth-redesign`) to use a separate file. If you don't pass a name and the existing default file is about a different topic, you'll be offered three suggested names for a new file. |
 | `/respawn [name]` | Reads the savepoint, internalizes it, cross-checks it against the actual files for staleness, and confirms current state + next steps. If the file isn't found, lists the other savepoints available in this repo. |
+| `/rewind` | Rewinds through the session, identifies distinct work threads, and proposes one savepoint per thread. Use when you forgot to `/save` along the way and a single session has accumulated multiple unrelated topics. Reads existing savepoints first to avoid duplicates — overlapping topics merge into the existing file rather than creating a clone. |
 
 All files live at `<cwd>/.claude/context-memory/<name>.md`. The directory is auto-created on first save. The `.md` extension is auto-appended if you leave it off.
 
@@ -126,6 +127,43 @@ Each writes to its own file under `.claude/context-memory/`. To respawn:
 ```
 
 The `.md` extension is optional — `/save auth-redesign` and `/save auth-redesign.md` are equivalent.
+
+### Recovering a session you forgot to save
+
+You worked for an hour, swerved between three different topics, and only realized at the end that you should have saved. Run:
+
+```
+/rewind
+```
+
+Claude reads the entire session, identifies the distinct threads, and proposes one savepoint per thread:
+
+```
+Found 3 distinct threads in this session:
+
+1. auth-jwt-migration.md — NEW
+   Subject: Migrating session-cookie auth to JWT-based auth
+   Summary: Wrote the JWTVerifier class and dual-mode middleware…
+
+2. payment-retry-bug.md — ⚠️  overlaps with existing savepoint
+   Subject: Fixing the duplicate-charge bug in the retry handler
+   Summary: Identified the race condition in retry_payment()…
+   → would merge into: payment-flow.md (existing subject: "Payment retry logic", last updated 2026-04-25)
+
+3. ci-flake-investigation.md — NEW
+   Subject: Tracking down the flaky integration test in CI
+   Summary: Reproduced locally with —reruns=10…
+
+What would you like to do?
+- accept — write all proposals (merging where flagged)
+- pick <numbers> — write only some
+- edit — rename one or more before writing
+- cancel — abort
+```
+
+Pick `accept`, all three files get written under `.claude/context-memory/`, and `/rewind` confirms with a summary you can verify.
+
+If `/rewind` decides the session is actually about a single topic, it'll tell you to use `/save` instead — no shards for a session that doesn't need splitting.
 
 ### Subject-mismatch detection
 

@@ -7,7 +7,7 @@
   "plugins": [
     {
       "name": "savepoint",
-      "description": "Two slash commands — /save and /respawn — that persist Claude Code session context to markdown files under .claude/context-memory/ so a future session can pick up exactly where the last one left off.",
+      "description": "Three slash commands — /save, /respawn, and /rewind — that persist Claude Code session context to markdown files under .claude/context-memory/ so a future session can pick up exactly where the last one left off. /rewind retroactively splits a mixed-context session into multiple savepoints.",
       "source": "./",
       "category": "productivity",
       "tags": ["memory", "context", "session", "productivity"],
