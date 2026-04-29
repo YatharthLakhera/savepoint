@@ -1,0 +1,18 @@
+{
+  "name": "savepoint",
+  "description": "Savepoints for Claude Code sessions — persist and resume context across windows.",
+  "owner": {
+    "name": "Yatharth Lakhera"
+  },
+  "plugins": [
+    {
+      "name": "savepoint",
+      "description": "Two slash commands — /mem-commit and /mem-load — that persist Claude Code session context to markdown files under .claude/context-memory/ so a future session can resume exactly where the last one left off.",
+      "source": "./",
+      "category": "productivity",
+      "tags": ["memory", "context", "session", "productivity"],
+      "homepage": "https://github.com/YatharthLakhera/savepoint",
+      "license": "MIT"
+    }
+  ]
+}

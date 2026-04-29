@@ -23,35 +23,40 @@ All files live at `<cwd>/.claude/context-memory/<name>.md`. The directory is aut
 
 ## Install
 
-### Option 1 — Manual (simplest)
+### Option 1 — As a Claude Code plugin (recommended)
+
+In any Claude Code session, run these two slash commands:
+
+```
+/plugin marketplace add YatharthLakhera/savepoint
+/plugin install savepoint@savepoint
+```
+
+The repo is its own one-plugin marketplace, so `/plugin marketplace add` points directly at it. After installing, `/mem-commit` and `/mem-load` are available immediately.
+
+To uninstall: `/plugin uninstall savepoint@savepoint`. To pull updates after a new release: `/plugin marketplace update savepoint`.
+
+### Option 2 — Manual copy
+
+If you'd rather drop the commands directly into your config without going through the plugin system:
 
 ```bash
 git clone https://github.com/YatharthLakhera/savepoint.git
 cp savepoint/commands/*.md ~/.claude/commands/
 ```
 
-That's it. Open any project, run `/mem-commit` or `/mem-load`.
+Open any project, run `/mem-commit` or `/mem-load`.
 
-### Option 2 — Per-project install
+### Option 3 — Per-project install
 
-If you want the commands scoped to a single repo (so they show up only in that project):
+Scope the commands to a single repo (so they only show up in that project):
 
 ```bash
 mkdir -p .claude/commands
 cp /path/to/savepoint/commands/*.md .claude/commands/
 ```
 
-Then add `.claude/context-memory/` to your `.gitignore` if you don't want to commit session memory, or *do* commit it if you want the team to share context.
-
-### Option 3 — As a Claude Code plugin
-
-This repo follows Anthropic's [plugin layout](https://github.com/anthropics/claude-plugins-official) — `.claude-plugin/plugin.json` + `commands/` — so it can be loaded as a plugin. Add it to a local marketplace config and run:
-
-```
-/plugin install savepoint@<your-marketplace>
-```
-
-See the [Claude Code plugins docs](https://docs.claude.com/en/docs/claude-code/plugins) for marketplace setup.
+Add `.claude/context-memory/` to your `.gitignore` if you don't want to commit session memory, or *do* commit it if you want the team to share context.
 
 ## Usage
 
