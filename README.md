@@ -31,14 +31,15 @@ All files live at `<cwd>/.claude/context-memory/<name>.md`. The directory is aut
 
 ### Option 1 — As a Claude Code plugin (recommended)
 
-In any Claude Code session, run these two slash commands:
+In any Claude Code session, run these slash commands:
 
 ```
 /plugin marketplace add YatharthLakhera/savepoint
 /plugin install savepoint@savepoint
+/reload-plugins
 ```
 
-The repo is its own one-plugin marketplace, so `/plugin marketplace add` points directly at it. After installing, `/savepoint` and `/respawn` are available immediately.
+The repo is its own one-plugin marketplace, so `/plugin marketplace add` points directly at it. `/reload-plugins` applies the install — without it, the new commands won't appear in the slash menu.
 
 **Verify it worked:**
 
@@ -48,9 +49,23 @@ Type `/` in your Claude Code prompt. You should see `savepoint` and `respawn` in
 /plugin list
 ```
 
-…and you'll see `savepoint@savepoint` listed as enabled. If the new commands don't show up after install, fully close and reopen your Claude Code session — some versions only refresh the command menu on session start.
+…and you'll see `savepoint@savepoint` listed as enabled. If the new commands still don't show up, fully close and reopen your Claude Code session as a fallback — some older versions only refresh the command menu on session start.
 
-To uninstall: `/plugin uninstall savepoint@savepoint`. To pull updates after a new release: `/plugin marketplace update savepoint`.
+**To uninstall:**
+
+```
+/plugin uninstall savepoint@savepoint
+/reload-plugins
+```
+
+`/reload-plugins` is required to clear the commands from the slash menu. To also forget the marketplace entirely (optional), run `/plugin marketplace remove savepoint` afterwards.
+
+**To pull updates after a new release:**
+
+```
+/plugin marketplace update savepoint
+/reload-plugins
+```
 
 ### Option 2 — Manual copy
 
