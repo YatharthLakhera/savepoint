@@ -21,6 +21,12 @@ If you have multiple Claude windows working on different topics in the same repo
 
 All files live at `<cwd>/.claude/context-memory/<name>.md`. The directory is auto-created on first save. The `.md` extension is auto-appended if you leave it off.
 
+## Requirements
+
+- [Claude Code](https://docs.claude.com/en/docs/claude-code) installed.
+- **For Option 1 (plugin install):** a version of Claude Code that supports the [plugin marketplace system](https://docs.claude.com/en/docs/claude-code/plugin-marketplaces). Type `/plugin` in any Claude Code session — if you see `marketplace` and `install` subcommands, you're good. If not, use Option 2 or 3.
+- **For Options 2 and 3:** any version of Claude Code with custom slash command support.
+
 ## Install
 
 ### Option 1 — As a Claude Code plugin (recommended)
@@ -33,6 +39,16 @@ In any Claude Code session, run these two slash commands:
 ```
 
 The repo is its own one-plugin marketplace, so `/plugin marketplace add` points directly at it. After installing, `/savepoint` and `/respawn` are available immediately.
+
+**Verify it worked:**
+
+Type `/` in your Claude Code prompt. You should see `savepoint` and `respawn` in the slash-command menu. You can also run:
+
+```
+/plugin list
+```
+
+…and you'll see `savepoint@savepoint` listed as enabled. If the new commands don't show up after install, fully close and reopen your Claude Code session — some versions only refresh the command menu on session start.
 
 To uninstall: `/plugin uninstall savepoint@savepoint`. To pull updates after a new release: `/plugin marketplace update savepoint`.
 
@@ -128,6 +144,77 @@ After the meta block, the body has these sections:
 - **Conventions & Warnings** — gotchas that are easy to get wrong
 
 The body is written in second person ("You are working on…", "You last left off at…") so the next session reads it as instructions to itself.
+
+### Example savepoint
+
+To make this concrete, here's what a real savepoint looks like in practice — saved partway through an auth migration:
+
+<details>
+<summary>Click to expand <code>last-memory.md</code></summary>
+
+````markdown
+---
+subject: Migrating session-cookie auth to JWT-based auth on the API gateway
+created: 2026-04-15
+last-updated: 2026-04-28
+---
+
+# Session Memory — Acme API gateway
+
+**Written:** 2026-04-28
+**Session goal:** Wire up the JWT verifier behind a feature flag and confirm the dual-mode middleware doesn't break existing browser clients.
+
+---
+
+## Project Identity
+
+You are working on Acme's API gateway, which sits in front of all internal services and currently authenticates users via opaque session cookies. The migration moves to short-lived JWTs (RS256) so mobile and CLI clients can stop tunneling through a fake browser flow.
+
+## Current State
+
+- ✅ `JWTVerifier` class with JWKS caching (`gateway/auth/jwt.py:42`)
+- ✅ 14 unit tests covering expiry, signature, audience, and clock-skew edges
+- 🔄 Dual-mode middleware (cookie + JWT) wired up but not tested under load
+- ❌ Mobile SDK update blocked on Apple cert renewal
+- ⏳ Cookie deprecation timeline not announced to teams yet
+
+## What Was Done This Session
+
+- Added the `JWTVerifier` class and finished its tests
+- Updated `auth_middleware.py:88` to fall through to JWT when no cookie is present
+- Drafted `docs/auth-migration-rollback.md` covering the staged rollback path
+
+## Open Questions & Blockers
+
+1. **JWKS endpoint URL** — auth service team hasn't confirmed the prod URL. Slack thread with @sarah.k stalled Friday. Blocking deploy.
+2. **Cache TTL** — currently 10min; need a load test to confirm this is right under burst traffic.
+
+## Key Decisions Made
+
+- RS256 over HS256: services don't share a secret-distribution channel, public-key verification is simpler operationally.
+- Dual-mode (not strict JWT-only) during rollout to avoid a hard cutover for browser clients.
+
+## Next Steps (in order)
+
+1. Ping @sarah.k again Monday for the JWKS prod URL.
+2. Run the load test against the dual-mode middleware in staging.
+3. Send the deprecation timeline draft to `#eng-platform` for review.
+
+## Critical Files & Locations
+
+- `gateway/auth/jwt.py` — the new verifier
+- `gateway/auth/middleware.py` — dual-mode integration
+- `docs/auth-migration-rollback.md` — rollback playbook
+
+## Conventions & Warnings
+
+- **Do NOT log the raw JWT** — it contains PII in the `email` claim.
+- The JWKS cache must use the existing Redis instance (not in-process) — gateway runs multiple pods and needs a shared cache.
+````
+
+</details>
+
+When you `/respawn` from this file in a fresh session, Claude reads it, cross-checks it against the actual repo (e.g. does `gateway/auth/jwt.py` still exist?), flags any drift, and confirms the next steps before continuing.
 
 ## Why a file, not auto-memory?
 
