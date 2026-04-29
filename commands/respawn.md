@@ -1,12 +1,12 @@
 ---
-description: Load session context from a memory file under .claude/context-memory/ into the current session so Claude is fully up to speed.
+description: Respawn at a savepoint — load session context from a memory file under .claude/context-memory/ into the current session so Claude is fully up to speed.
 argument-hint: "[name]"
 allowed-tools:
   - Read
   - Bash
 ---
 
-Load session context from a markdown file under `<cwd>/.claude/context-memory/` into the current session so Claude is fully up to speed without re-reading the whole conversation history.
+Respawn at a savepoint — load session context from a markdown file under `<cwd>/.claude/context-memory/` into the current session so Claude is fully up to speed without re-reading the whole conversation history.
 
 ## Step 0 — Resolve filename and target path
 
@@ -24,7 +24,7 @@ Use the Read tool to read TARGET_PATH.
 
 **If the file does not exist:**
 
-Use the Bash tool to list any other context files in the directory:
+Use the Bash tool to list any other savepoints in the directory:
 
 ```bash
 ls .claude/context-memory/*.md 2>/dev/null
@@ -34,15 +34,15 @@ If files exist there, read each one's YAML meta block (`subject`, `last-updated`
 
 > "No `<FILENAME>` found at `<TARGET_PATH>`.
 >
-> Available context files in this repo:
+> Available savepoints in this repo:
 > - `<file-1>.md` — *<subject>* (last updated <date>)
 > - `<file-2>.md` — *<subject>* (last updated <date>)
 >
-> Run `/mem-load <name>` with one of those, or `/mem-commit` first to save the current session's context."
+> Run `/respawn <name>` with one of those, or `/savepoint` first to drop a savepoint of the current session."
 
 If `.claude/context-memory/` does not exist or is empty, simpler message:
 
-> "No context memory found in this repo. Run `/mem-commit` first to save the current session's context, or `/mem-load <name>` if you stored it under a different name."
+> "No savepoints found in this repo. Run `/savepoint` first to drop one, or `/respawn <name>` if you stored it under a different name."
 
 Then stop.
 
@@ -57,13 +57,13 @@ Read every section carefully. Treat this file as ground truth for:
 - What the conventions and constraints are
 - What should happen next
 
-Cross-reference the memory against the actual project files if any paths or claims seem stale. If you spot a conflict between what the memory says and what the files show, note it.
+Cross-reference the savepoint against the actual project files if any paths or claims seem stale. If you spot a conflict between what the savepoint says and what the files show, note it.
 
 ## Step 3 — Confirm to the user
 
 Reply with a structured confirmation that proves you've loaded the context. Use this format:
 
-> **Memory loaded** from `<TARGET_PATH>`
+> **Respawned** from `<TARGET_PATH>`
 >
 > **Subject:** [subject from meta block]
 > **Project:** [project name and one-line description from memory body]
@@ -76,6 +76,6 @@ Reply with a structured confirmation that proves you've loaded the context. Use 
 > [Reproduce the next-steps list from the file, unchanged]
 >
 > **Stale items noticed (if any):**
-> [List any conflicts between memory and actual files — e.g., "memory says X file exists but it's not there", "memory says step Y is in progress but it looks complete based on the files". If nothing stale, omit this section.]
+> [List any conflicts between savepoint and actual files — e.g., "savepoint says X file exists but it's not there", "savepoint says step Y is in progress but it looks complete based on the files". If nothing stale, omit this section.]
 >
 > Ready to continue. What would you like to work on?

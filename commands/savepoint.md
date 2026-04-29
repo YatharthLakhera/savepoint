@@ -1,5 +1,5 @@
 ---
-description: Commit the current session's context to a memory file under .claude/context-memory/ so a future session can resume exactly where this one left off.
+description: Drop a savepoint of the current session — commit context to a memory file under .claude/context-memory/ so a future session can respawn exactly where this one left off.
 argument-hint: "[name]"
 allowed-tools:
   - Read
@@ -7,9 +7,9 @@ allowed-tools:
   - Bash
 ---
 
-Commit the current session's context to a markdown file under `<cwd>/.claude/context-memory/` so a future session can resume exactly where this one left off.
+Drop a savepoint of the current session's context to a markdown file under `<cwd>/.claude/context-memory/` so a future session can `/respawn` exactly where this one left off.
 
-Multiple Claude windows can work on the same repo with different focuses (auth, payments, infra, etc.). Use the optional `[name]` argument to keep each focus in its own file instead of overwriting the default.
+Multiple Claude windows can work on the same repo with different focuses (auth, payments, infra, etc.). Use the optional `[name]` argument to keep each focus in its own savepoint instead of overwriting the default.
 
 ## Step 0 — Resolve filename and target path
 
@@ -59,7 +59,7 @@ Use the Read tool to check if TARGET_PATH exists.
   > This session looks like it's about something different:
   > **[current session focus]**
   >
-  > Mashing them together would lose detail from both. I'd suggest a new context file. Three suggestions:
+  > Mashing them together would lose detail from both. I'd suggest a new savepoint. Three suggested names:
   > - `<suggestion-1>.md`
   > - `<suggestion-2>.md`
   > - `<suggestion-3>.md`
@@ -88,7 +88,7 @@ Otherwise, use the Read tool to check if TARGET_PATH exists.
 - Read the full file
 - Write a 3–5 sentence summary of what it contains (subject, current state, when it was last updated)
 - Ask the user:
-  > "A context file already exists at `<TARGET_PATH>`. Here's what it covers: [summary]
+  > "A savepoint already exists at `<TARGET_PATH>`. Here's what it covers: [summary]
   >
   > What would you like to do?
   > - **retain** — keep it as-is (abort)
@@ -101,13 +101,13 @@ Otherwise, use the Read tool to check if TARGET_PATH exists.
 
 ## Step 4 — Compose the file
 
-Every context file starts with a YAML meta block, then the session memory body.
+Every savepoint file starts with a YAML meta block, then the session memory body.
 
 **Meta block (always at the very top of the file):**
 
 ```yaml
 ---
-subject: <one-line description of what this context is about>
+subject: <one-line description of what this savepoint is about>
 created: <YYYY-MM-DD>
 last-updated: <YYYY-MM-DD>
 ---
@@ -174,8 +174,8 @@ Then use the Write tool to write the composed content to TARGET_PATH.
 
 Tell the user:
 
-> "Context committed to `.claude/context-memory/<FILENAME>`.
+> "Savepoint dropped at `.claude/context-memory/<FILENAME>`.
 >
 > Subject: *<subject>*
 >
-> To reload in a future session: `/mem-load`<if FILENAME is not `last-memory.md`: ` <name-without-extension>`>"
+> To respawn in a future session: `/respawn`<if FILENAME is not `last-memory.md`: ` <name-without-extension>`>"

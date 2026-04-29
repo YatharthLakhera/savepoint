@@ -1,7 +1,7 @@
 {
   "name": "savepoint",
-  "description": "Savepoints for Claude Code sessions. Two slash commands — /mem-commit and /mem-load — that persist session context to markdown files under .claude/context-memory/ so a future session can resume exactly where the last one left off.",
-  "version": "0.1.0",
+  "description": "Savepoints for Claude Code sessions. Two slash commands — /savepoint and /respawn — that persist session context to markdown files under .claude/context-memory/ so a future session can pick up exactly where the last one left off.",
+  "version": "0.2.0",
   "author": {
     "name": "Yatharth Lakhera"
   },

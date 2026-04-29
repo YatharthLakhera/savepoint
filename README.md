@@ -2,24 +2,24 @@
 
 Savepoints for [Claude Code](https://docs.claude.com/en/docs/claude-code) sessions.
 
-Two slash commands — `/mem-commit` and `/mem-load` — that let you end one session, walk away, and resume in a fresh session as if you never closed the window. Like a savepoint in a game: drop one before you quit, pick up exactly where you left off.
+Two slash commands — `/savepoint` and `/respawn` — that let you end one session, walk away, and resume in a fresh session as if you never closed the window. Like a savepoint in a game: drop one before you quit, respawn exactly where you left off.
 
 ## The problem
 
 Long Claude Code sessions accumulate a lot of context that doesn't live in the codebase: decisions you made, things you ruled out, what's half-finished, what to do next. When the session ends, that context is gone. The next session has to rediscover everything from the files, and a lot of it can't be rediscovered at all.
 
-`savepoint` fixes this with human-readable markdown files under `.claude/context-memory/` in your repo. At the end of a session you run `/mem-commit` to drop a savepoint, and Claude writes everything important into a file. At the start of the next session you run `/mem-load` and Claude reads it back.
+`savepoint` fixes this with human-readable markdown files under `.claude/context-memory/` in your repo. At the end of a session you run `/savepoint` and Claude writes everything important into a file. At the start of the next session you run `/respawn` and Claude reads it back.
 
-If you have multiple Claude windows working on different topics in the same repo (auth in one, payments in another), give each its own context file with a name argument — they won't overwrite each other.
+If you have multiple Claude windows working on different topics in the same repo (auth in one, payments in another), give each its own savepoint with a name argument — they won't overwrite each other.
 
 ## The commands
 
 | Command | What it does |
 | --- | --- |
-| `/mem-commit [name]` | Self-assesses what context is in-the-head but not in the files, then writes a structured memory file. Defaults to `last-memory.md`. Pass a name (e.g. `auth-redesign`) to use a separate file. If you don't pass a name and the existing default file is about a different topic, you'll be offered three suggested names for a new file. |
-| `/mem-load [name]` | Reads the memory file, internalizes it, cross-checks it against the actual files for staleness, and confirms current state + next steps. If the file isn't found, lists the other context files available in this repo. |
+| `/savepoint [name]` | Self-assesses what context is in-the-head but not in the files, then writes a structured savepoint. Defaults to `last-memory.md`. Pass a name (e.g. `auth-redesign`) to use a separate file. If you don't pass a name and the existing default file is about a different topic, you'll be offered three suggested names for a new file. |
+| `/respawn [name]` | Reads the savepoint, internalizes it, cross-checks it against the actual files for staleness, and confirms current state + next steps. If the file isn't found, lists the other savepoints available in this repo. |
 
-All files live at `<cwd>/.claude/context-memory/<name>.md`. The directory is auto-created on first commit. The `.md` extension is auto-appended if you leave it off.
+All files live at `<cwd>/.claude/context-memory/<name>.md`. The directory is auto-created on first save. The `.md` extension is auto-appended if you leave it off.
 
 ## Install
 
@@ -32,7 +32,7 @@ In any Claude Code session, run these two slash commands:
 /plugin install savepoint@savepoint
 ```
 
-The repo is its own one-plugin marketplace, so `/plugin marketplace add` points directly at it. After installing, `/mem-commit` and `/mem-load` are available immediately.
+The repo is its own one-plugin marketplace, so `/plugin marketplace add` points directly at it. After installing, `/savepoint` and `/respawn` are available immediately.
 
 To uninstall: `/plugin uninstall savepoint@savepoint`. To pull updates after a new release: `/plugin marketplace update savepoint`.
 
@@ -45,7 +45,7 @@ git clone https://github.com/YatharthLakhera/savepoint.git
 cp savepoint/commands/*.md ~/.claude/commands/
 ```
 
-Open any project, run `/mem-commit` or `/mem-load`.
+Open any project, run `/savepoint` or `/respawn`.
 
 ### Option 3 — Per-project install
 
@@ -65,7 +65,7 @@ Add `.claude/context-memory/` to your `.gitignore` if you don't want to commit s
 End of a working session:
 
 ```
-/mem-commit
+/savepoint
 ```
 
 Writes to `./.claude/context-memory/last-memory.md`.
@@ -73,44 +73,44 @@ Writes to `./.claude/context-memory/last-memory.md`.
 Start of the next session, in the same project directory:
 
 ```
-/mem-load
+/respawn
 ```
 
 Reads it back, flags anything stale against the current files, and tells you current state and next steps.
 
 ### Multiple parallel contexts
 
-When you have two or more Claude windows on the same repo working on different things, give each its own file:
+When you have two or more Claude windows on the same repo working on different things, give each its own savepoint:
 
 ```
-/mem-commit auth-redesign
-/mem-commit payment-flow
+/savepoint auth-redesign
+/savepoint payment-flow
 ```
 
-Each writes to its own file under `.claude/context-memory/`. To resume:
+Each writes to its own file under `.claude/context-memory/`. To respawn:
 
 ```
-/mem-load auth-redesign
-/mem-load payment-flow
+/respawn auth-redesign
+/respawn payment-flow
 ```
 
-The `.md` extension is optional — `/mem-commit auth-redesign` and `/mem-commit auth-redesign.md` are equivalent.
+The `.md` extension is optional — `/savepoint auth-redesign` and `/savepoint auth-redesign.md` are equivalent.
 
 ### Subject-mismatch detection
 
-If you run `/mem-commit` with no name and the existing `last-memory.md` is about a different topic than this session, the command won't silently merge. It'll show you the existing subject vs. the current session's subject and offer three suggested names for a new file, plus `merge` / `override` / `cancel` options.
+If you run `/savepoint` with no name and the existing `last-memory.md` is about a different topic than this session, the command won't silently merge. It'll show you the existing subject vs. the current session's subject and offer three suggested names for a new file, plus `merge` / `override` / `cancel` options.
 
 This only fires when no name is given. If you pass a name explicitly, you're being intentional and the command just writes.
 
 ## What gets stored
 
-Every memory file starts with a YAML meta block:
+Every savepoint starts with a YAML meta block:
 
 ```yaml
 ---
-subject: One-line description of what this context is about
-created: 2026-04-27
-last-updated: 2026-04-27
+subject: One-line description of what this savepoint is about
+created: 2026-04-28
+last-updated: 2026-04-28
 ---
 ```
 
