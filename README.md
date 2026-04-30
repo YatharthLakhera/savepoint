@@ -49,13 +49,7 @@ The repo is its own one-plugin marketplace, so `/plugin marketplace add` points 
 
 **Verify it worked:**
 
-Type `/` in your Claude Code prompt. You should see `save` and `respawn` in the slash-command menu. You can also run:
-
-```
-/plugin list
-```
-
-…and you'll see `savepoint@savepoint` listed as enabled. If the new commands still don't show up, fully close and reopen your Claude Code session as a fallback — some older versions only refresh the command menu on session start.
+Type `/` in your Claude Code prompt. You should see `save` and `respawn` in the slash-command menu. If they don't show up, fully close and reopen your Claude Code session as a fallback — some older versions only refresh the command menu on session start.
 
 ### Option 2 — Manual copy
 
