@@ -7,7 +7,7 @@
 
 Savepoints for [Claude Code](https://docs.claude.com/en/docs/claude-code) sessions.
 
-Three slash commands — `/save`, `/respawn`, and `/rewind` — that let you end one session, walk away, and resume in a fresh session as if you never closed the window. Like savepoints in a game: drop one before you quit, respawn exactly where you left off, or rewind through a messy session and split it into multiple savepoints if you forgot to drop one along the way.
+Four slash commands — `/save`, `/respawn`, `/rewind`, and `/cleanup` — that let you end one session, walk away, and resume in a fresh session as if you never closed the window. Like savepoints in a game: drop one before you quit, respawn exactly where you left off, rewind through a messy session and split it into multiple savepoints if you forgot to drop one along the way, or sweep out stale savepoints you don't need anymore.
 
 ## The problem
 
@@ -24,6 +24,7 @@ If you have multiple Claude windows working on different topics in the same repo
 | `/save [name]` | Drop a savepoint of the current session. |
 | `/respawn [name]` | Load a savepoint into a fresh session. |
 | `/rewind` | Split a multi-topic session into multiple savepoints. |
+| `/cleanup [duration]` | Delete savepoints older than a duration (default — 1 month). |
 
 Full behavior, edge cases, and usage examples are in [Commands in detail](#commands-in-detail) and [Usage](#usage) below.
 
@@ -93,6 +94,7 @@ For manual copies (Options 2 and 3), `git pull` the repo and re-run the `cp` com
 | `/save [name]` | Drops a savepoint of the current session. Self-assesses what context is in-the-head but not in the files, then writes a structured savepoint. Defaults to `last-memory.md`. Pass a name (e.g. `auth-redesign`) to use a separate file. If you don't pass a name and the existing default file is about a different topic, you'll be offered three suggested names for a new file. |
 | `/respawn [name]` | Reads the savepoint, internalizes it, cross-checks it against the actual files for staleness, and confirms current state + next steps. If the file isn't found, lists the other savepoints available in this repo. |
 | `/rewind` | Rewinds through the session, identifies distinct work threads, and proposes one savepoint per thread. Use when you forgot to `/save` along the way and a single session has accumulated multiple unrelated topics. Reads existing savepoints first to avoid duplicates — overlapping topics merge into the existing file rather than creating a clone. |
+| `/cleanup [duration]` | Deletes savepoints whose `last-updated` is older than the given duration. Defaults to 1 month. Accepts natural-language durations like `7d`, `2 weeks`, `3 months`, `1 year` (optional `t-` prefix). Always previews the affected files and asks for confirmation before deleting. Files missing a valid `last-updated` are never deleted — they're listed as skipped. |
 
 All files live at `<cwd>/.claude/context-memory/<name>.md`. The directory is auto-created on first save. The `.md` extension is auto-appended if you leave it off.
 
@@ -170,6 +172,38 @@ What would you like to do?
 Pick `accept`, all three files get written under `.claude/context-memory/`, and `/rewind` confirms with a summary you can verify.
 
 If `/rewind` decides the session is actually about a single topic, it'll tell you to use `/save` instead — no shards for a session that doesn't need splitting.
+
+### Cleaning up old savepoints
+
+Savepoints from finished work pile up. To sweep them out:
+
+```
+/cleanup           # delete anything last updated more than 1 month ago
+/cleanup 7d        # delete anything older than 7 days
+/cleanup 2 weeks   # delete anything older than 2 weeks
+/cleanup t-3mo     # the t- prefix is optional — same as "3mo"
+```
+
+Accepted duration forms: `Nd` / `N day(s)`, `Nw` / `N week(s)`, `Nm` / `N month(s)` / `Nmo`, `Ny` / `N year(s)`. Case-insensitive, space optional.
+
+`/cleanup` always shows a preview first:
+
+```
+Cleanup preview — threshold: 2026-04-11 (1 month ago)
+
+Will delete (2):
+- auth-redesign.md — Migrating session-cookie auth to JWT (last updated 2026-03-02)
+- ci-flake-investigation.md — Tracking flaky integration test (last updated 2026-02-18)
+
+Will keep (1):
+- last-memory.md — Payment retry refactor (last updated 2026-05-09)
+
+Proceed with deletion? (yes / no)
+```
+
+Reply `yes` (or `delete`) to actually delete; anything else aborts. Deletes are irreversible — there is no trash directory.
+
+Files missing a valid `last-updated` meta field are never deleted automatically. They show up in a separate "Skipped" section so you can decide manually.
 
 ### Subject-mismatch detection
 
@@ -301,7 +335,7 @@ For manual copies (Options 2 and 3), delete the `.md` files you copied from `~/.
 
 ## Contributing
 
-PRs welcome. The two command files in `commands/` are the entire surface area — keep them simple, keep them readable.
+PRs welcome. The command files in `commands/` are the entire surface area — keep them simple, keep them readable.
 
 ## License
 
